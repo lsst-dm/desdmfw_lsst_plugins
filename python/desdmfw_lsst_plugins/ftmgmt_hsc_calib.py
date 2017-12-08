@@ -19,22 +19,18 @@ import re
 import despydmdb.dmdb_defs as dmdbdefs
 from filemgmt.ftmgmt_genfits import FtMgmtGenFits
 from despymisc import miscutils
-from despyfitsutils  import fitsutils
+from despyfitsutils import fitsutils
 import despyfitsutils.fits_special_metadata as spmeta
-
 
 
 class FtMgmtHSCCalib(FtMgmtGenFits):
     """  Class for managing an HSC calib filetype (get metadata, update metadata, etc) """
-
-
 
     ######################################################################
     def __init__(self, filetype, dbh, config, filepat=None):
         """ Initialize object """
         # config must have filetype_metadata, file_header_info, keywords_file (OPT)
         FtMgmtGenFits.__init__(self, filetype, dbh, config, filepat)
-
 
     ######################################################################
     def has_contents_ingested(self, listfullnames):
@@ -53,7 +49,7 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
         self.dbh.load_filename_gtt(byfilename.keys())
 
         dbq = "select r.filename from calibration r, %s g where r.filename=g.filename" % \
-                 (dmdbdefs.DB_GTT_FILENAME)
+            (dmdbdefs.DB_GTT_FILENAME)
         curs = self.dbh.cursor()
         curs.execute(dbq)
 
@@ -67,7 +63,6 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
         self.dbh.empty_gtt(dmdbdefs.DB_GTT_FILENAME)
 
         return results
-
 
     ######################################################################
     def perform_metadata_tasks(self, fullname, do_update, update_info):
@@ -98,8 +93,6 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
         if miscutils.fwdebug_check(3, 'FTMGMT_DEBUG'):
             miscutils.fwdebug_print("INFO: end")
         return metadata
-
-
 
     ######################################################################
     def ingest_contents(self, listfullnames, **kwargs):
@@ -166,7 +159,7 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
                 # get value directly from header
                 if 'h' in hddict[status_sect]:
                     if miscutils.fwdebug_check(3, 'FTMGMT_DEBUG'):
-                        miscutils.fwdebug_print("INFO: headers=%s" % \
+                        miscutils.fwdebug_print("INFO: headers=%s" %
                                                 (hddict[status_sect]['h'].keys()))
                     metakeys = hddict[status_sect]['h'].keys()
                     mdata2, ddef2 = self._gather_metadata_from_header(fullname, hdulist,
@@ -180,7 +173,7 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
                     for funckey in hddict[status_sect]['c'].keys():
                         #print funckey
                         if funckey in myvals:
-                            metadata[funckey] = myvals[funckey] 
+                            metadata[funckey] = myvals[funckey]
                         else:
                             #print funckey, "not in myvals", myvals.keys()
                             try:
@@ -190,9 +183,11 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
                                     metadata[funckey] = val
                                 except KeyError:
                                     if miscutils.fwdebug_check(1, 'FTMGMT_DEBUG'):
-                                        miscutils.fwdebug_print("INFO: couldn't create value for key %s in %s header of file %s" % (funckey, hdname, fullname))
+                                        miscutils.fwdebug_print(
+                                            "INFO: couldn't create value for key %s in %s header of file %s" % (funckey, hdname, fullname))
                             except AttributeError:
-                                miscutils.fwdebug_print("WARN: Couldn't find func_%s in despyfits.fits_special_metadata" % (funckey))
+                                miscutils.fwdebug_print(
+                                    "WARN: Couldn't find func_%s in despyfits.fits_special_metadata" % (funckey))
 
                 # copy value from 1 hdu to primary
                 if 'p' in hddict[status_sect]:
@@ -209,7 +204,6 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
             miscutils.fwdebug_print("INFO: end")
         return metadata, datadef
 
-
     ######################################################################
     @classmethod
     def _gather_metadata_from_header(cls, fullname, hdulist, hdname, metakeys):
@@ -225,17 +219,16 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
 
             if key in myvals:
                 metadata[key] = myvals[key]
-            else: 
+            else:
                 try:
                     metadata[key] = fitsutils.get_hdr_value(hdulist, key.upper(), hdname)
                     datadef[key] = fitsutils.get_hdr_extra(hdulist, key.upper(), hdname)
                 except KeyError:
                     if miscutils.fwdebug_check(1, 'FTMGMT_DEBUG'):
-                        miscutils.fwdebug_print("INFO: didn't find key %s in %s header of file %s" %\
+                        miscutils.fwdebug_print("INFO: didn't find key %s in %s header of file %s" %
                                                 (key, hdname, fullname))
 
         return metadata, datadef
-
 
     ######################################################################
     @classmethod
@@ -246,17 +239,18 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
 
         try:
             calib_id = fitsutils.get_hdr_value(hdulist, 'CALIB_ID', hdname)
-    
+
             for field in ('filter', 'calibDate', 'ccd'):
                 match = re.search(".*%s=(\S+)" % field, calib_id)
                 if match:
                     myvals[field] = match.groups()[0]
                 else:
-                    raise ValueError('Invalid CALIB_ID when looking for %s: %s (%s)' % (field, calib_id, fullname))
+                    raise ValueError('Invalid CALIB_ID when looking for %s: %s (%s)' %
+                                     (field, calib_id, fullname))
 
                 #if m.group(1).upper() != 'NONE':
                 #    myvals['band'] = m.group(1)[-1]
-                #myvals['validstart'] = datetime.strptime(myvals['calibdate'], "%Y-%m-%d") - timedelta(6*30) 
+                #myvals['validstart'] = datetime.strptime(myvals['calibdate'], "%Y-%m-%d") - timedelta(6*30)
                 #myvals['validend'] = datetime.strptime(myvals['calibdate'], "%Y-%m-%d") + timedelta(6*30)
                 #print "MMG", myvals
         except:  # TODO: need to figure out exact error to pass

@@ -21,9 +21,8 @@ import re
 import despydmdb.dmdb_defs as dmdbdefs
 from filemgmt.ftmgmt_genfits import FtMgmtGenFits
 from despymisc import miscutils
-from despyfitsutils  import fitsutils
+from despyfitsutils import fitsutils
 import despyfitsutils.fits_special_metadata as spmeta
-
 
 
 class FtMgmtHSCRaw(FtMgmtGenFits):
@@ -42,7 +41,6 @@ class FtMgmtHSCRaw(FtMgmtGenFits):
         # config must have filetype_metadata, file_header_info, keywords_file (OPT)
         FtMgmtGenFits.__init__(self, filetype, dbh, config, filepat)
 
-
     ######################################################################
     def has_contents_ingested(self, listfullnames):
         """ Check if exposure has row in rasicam_decam table """
@@ -60,7 +58,7 @@ class FtMgmtHSCRaw(FtMgmtGenFits):
         self.dbh.load_filename_gtt(byfilename.keys())
 
         dbq = "select r.filename from image r, %s g where r.filename=g.filename" % \
-                 (dmdbdefs.DB_GTT_FILENAME)
+            (dmdbdefs.DB_GTT_FILENAME)
         curs = self.dbh.cursor()
         curs.execute(dbq)
 
@@ -74,7 +72,6 @@ class FtMgmtHSCRaw(FtMgmtGenFits):
         self.dbh.empty_gtt(dmdbdefs.DB_GTT_FILENAME)
 
         return results
-
 
     ######################################################################
     def perform_metadata_tasks(self, fullname, do_update, update_info):
@@ -106,8 +103,6 @@ class FtMgmtHSCRaw(FtMgmtGenFits):
         if miscutils.fwdebug_check(3, 'FTMGMT_DEBUG'):
             miscutils.fwdebug_print("INFO: end")
         return metadata
-
-
 
     ######################################################################
     def ingest_contents(self, listfullnames, **kwargs):
@@ -174,7 +169,7 @@ class FtMgmtHSCRaw(FtMgmtGenFits):
                 # get value directly from header
                 if 'h' in hddict[status_sect]:
                     if miscutils.fwdebug_check(3, 'FTMGMT_DEBUG'):
-                        miscutils.fwdebug_print("INFO: headers=%s" % \
+                        miscutils.fwdebug_print("INFO: headers=%s" %
                                                 (hddict[status_sect]['h'].keys()))
                     metakeys = hddict[status_sect]['h'].keys()
                     mdata2, ddef2 = self._gather_metadata_from_header(fullname, hdulist,
@@ -192,14 +187,16 @@ class FtMgmtHSCRaw(FtMgmtGenFits):
                             try:
                                 specmf = getattr(spmeta, 'func_%s' % funckey.lower())
                             except AttributeError:
-                                miscutils.fwdebug_print("WARN: Couldn't find func_%s in despyfits.fits_special_metadata" % (funckey))
+                                miscutils.fwdebug_print(
+                                    "WARN: Couldn't find func_%s in despyfits.fits_special_metadata" % (funckey))
 
                             try:
                                 val = specmf(fullname, hdulist, hdname)
                                 metadata[funckey] = val
                             except KeyError:
                                 if miscutils.fwdebug_check(1, 'FTMGMT_DEBUG'):
-                                    miscutils.fwdebug_print("INFO: couldn't create value for key %s in %s header of file %s" % (funckey, hdname, fullname))
+                                    miscutils.fwdebug_print(
+                                        "INFO: couldn't create value for key %s in %s header of file %s" % (funckey, hdname, fullname))
 
                 # copy value from 1 hdu to primary
                 if 'p' in hddict[status_sect]:
@@ -216,7 +213,6 @@ class FtMgmtHSCRaw(FtMgmtGenFits):
             miscutils.fwdebug_print("INFO: end")
         return metadata, datadef
 
-
     ######################################################################
     @classmethod
     def _gather_metadata_from_header(cls, fullname, hdulist, hdname, metakeys):
@@ -232,12 +228,10 @@ class FtMgmtHSCRaw(FtMgmtGenFits):
                 datadef[key] = fitsutils.get_hdr_extra(hdulist, key.upper(), hdname)
             except KeyError:
                 if miscutils.fwdebug_check(1, 'FTMGMT_DEBUG'):
-                    miscutils.fwdebug_print("INFO: didn't find key %s in %s header of file %s" %\
+                    miscutils.fwdebug_print("INFO: didn't find key %s in %s header of file %s" %
                                             (key, hdname, fullname))
 
         return metadata, datadef
-
-
 
     ######################################################################
     @classmethod
@@ -270,7 +264,7 @@ class FtMgmtHSCRaw(FtMgmtGenFits):
     ######################################################################
     ######################################################################
     ######################################################################
-    # copied from python/lsst/obs/subaru/ingest.py and then modified to remove 
+    # copied from python/lsst/obs/subaru/ingest.py and then modified to remove
     # dependence upon md object
 
     @classmethod
@@ -313,7 +307,6 @@ class FtMgmtHSCRaw(FtMgmtGenFits):
             return filter.strip().upper()
         except:
             return "Unrecognized"
-
 
     @classmethod
     def getTjd(self, mjd):

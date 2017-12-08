@@ -273,12 +273,12 @@ class GenWrapLSST(basic_wrapper.BasicWrapper):
                     cmd_base_pat = self._change_vars_parens(cmd_add_pat)
 
                     # for each file (specifically: for each line, for each file)
-                    for wlname, wldict in listwcl['list']['line'].items():
+                    for wlname, wldict in list(listwcl['list']['line'].items()):
                         searchobj = None
                         if filesect in wldict['file']:
                             searchobj = wldict['file'][filesect]
                         elif len(wldict['file']) == 1:
-                            searchobj = wldict['file'].values()[0]
+                            searchobj = list(wldict['file'].values())[0]
                         else:
                             raise ValueError('Cannot find file %s in put list (%s)' % (filesect, whichfiles))
                         add_cmd_str = repfunc.replace_vars_single(cmd_base_pat, self.inputwcl,
@@ -335,12 +335,12 @@ class GenWrapLSST(basic_wrapper.BasicWrapper):
 
                         joinvals = set()
                         # for each file (specifically: for each line, for each file)
-                        for wlname, wldict in listwcl['list']['line'].items():
+                        for wlname, wldict in list(listwcl['list']['line'].items()):
                             searchobj = None
                             if filesect in wldict['file']:
                                 searchobj = wldict['file'][filesect]
                             elif len(wldict['file']) == 1:
-                                searchobj = wldict['file'].values()[0]
+                                searchobj = list(wldict['file'].values())[0]
                             else:
                                 raise ValueError('Cannot find file %s in put list (%s)' %
                                                  (filesect, whichfiles))
@@ -410,7 +410,7 @@ class GenWrapLSST(basic_wrapper.BasicWrapper):
                     else:
                         miscutils.fwdie('Error:  unknown linefmt (%s)' % linefmt, 1)
 
-                    ldict = dict(zip(columns, lineinfo))
+                    ldict = dict(list(zip(columns, lineinfo)))
                     mylist.append(ldict)
             lines = queryutils.convert_single_files_to_lines(mylist)
             mywcl = wcl.WCL(lines)

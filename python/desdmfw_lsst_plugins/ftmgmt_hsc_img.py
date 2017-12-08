@@ -42,7 +42,7 @@ class FtMgmtHSCImg(FtMgmtGenFits):
             byfilename[filename] = fname
 
         self.dbh.empty_gtt(dmdbdefs.DB_GTT_FILENAME)
-        self.dbh.load_filename_gtt(byfilename.keys())
+        self.dbh.load_filename_gtt(list(byfilename.keys()))
 
         dbq = "select r.filename from image r, %s g where r.filename=g.filename" % \
             (dmdbdefs.DB_GTT_FILENAME)
@@ -79,7 +79,7 @@ class FtMgmtHSCImg(FtMgmtGenFits):
         metadata, _ = self._gather_metadata_file(fullname, hdulist=hdulist)
         if miscutils.fwdebug_check(6, 'FTMGMT_DEBUG'):
             miscutils.fwdebug_print("INFO: file=%s" % (fullname))
-        print "MMG", metadata
+        print("MMG", metadata)
 
         # call function to update headers
         if do_update:
@@ -140,17 +140,17 @@ class FtMgmtHSCImg(FtMgmtGenFits):
         datadef = OrderedDict()
 
         metadefs = self.config['filetype_metadata'][self.filetype]
-        for hdname, hddict in metadefs['hdus'].items():
+        for hdname, hddict in list(metadefs['hdus'].items()):
             for status_sect in hddict:  # don't worry about missing here, ingest catches
                 # get value from filename
                 if 'f' in hddict[status_sect]:
-                    metakeys = hddict[status_sect]['f'].keys()
+                    metakeys = list(hddict[status_sect]['f'].keys())
                     mdata2 = self._gather_metadata_from_filename(fullname, metakeys)
                     metadata.update(mdata2)
 
                 # get value from wcl/config
                 if 'w' in hddict[status_sect]:
-                    metakeys = hddict[status_sect]['w'].keys()
+                    metakeys = list(hddict[status_sect]['w'].keys())
                     mdata2 = self._gather_metadata_from_config(fullname, metakeys)
                     metadata.update(mdata2)
 
@@ -158,8 +158,8 @@ class FtMgmtHSCImg(FtMgmtGenFits):
                 if 'h' in hddict[status_sect]:
                     if miscutils.fwdebug_check(3, 'FTMGMT_DEBUG'):
                         miscutils.fwdebug_print("INFO: headers=%s" %
-                                                (hddict[status_sect]['h'].keys()))
-                    metakeys = hddict[status_sect]['h'].keys()
+                                                (list(hddict[status_sect]['h'].keys())))
+                    metakeys = list(hddict[status_sect]['h'].keys())
                     mdata2, ddef2 = self._gather_metadata_from_header(fullname, hdulist,
                                                                       hdname, metakeys)
                     metadata.update(mdata2)
@@ -168,7 +168,7 @@ class FtMgmtHSCImg(FtMgmtGenFits):
                 # calculate value from different header values(s)
                 if 'c' in hddict[status_sect]:
                     myvals = self._override_vals(fullname, hdulist, hdname)
-                    for funckey in hddict[status_sect]['c'].keys():
+                    for funckey in list(hddict[status_sect]['c'].keys()):
                         if funckey in myvals:
                             metadata[funckey] = myvals[funckey]
                         else:
@@ -188,7 +188,7 @@ class FtMgmtHSCImg(FtMgmtGenFits):
 
                 # copy value from 1 hdu to primary
                 if 'p' in hddict[status_sect]:
-                    metakeys = hddict[status_sect]['p'].keys()
+                    metakeys = list(hddict[status_sect]['p'].keys())
                     mdata2, ddef2 = self._gather_metadata_from_header(fullname, hdulist,
                                                                       hdname, metakeys)
                     #print 'ddef2 = ', ddef2

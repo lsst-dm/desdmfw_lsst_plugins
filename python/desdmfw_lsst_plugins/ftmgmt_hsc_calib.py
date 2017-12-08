@@ -1,14 +1,8 @@
 #!/usr/bin/env python
 
-# $Id: ftmgmt_raw.py 41700 2016-04-19 19:23:55Z mgower $
-# $Rev:: 41700                            $:  # Revision of last commit.
-# $LastChangedBy:: mgower                 $:  # Author of last commit.
-# $LastChangedDate:: 2016-04-19 14:23:55 #$:  # Date of last commit.
-
 """
 """
 
-__version__ = "$Rev: 41700 $"
 
 from datetime import datetime, timedelta
 from collections import OrderedDict

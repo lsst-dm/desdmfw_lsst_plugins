@@ -3,7 +3,6 @@
 """
 """
 
-
 from datetime import datetime, timedelta
 from collections import OrderedDict
 import pyfits
@@ -18,18 +17,18 @@ import despyfitsutils.fits_special_metadata as spmeta
 
 
 class FtMgmtHSCCalib(FtMgmtGenFits):
-    """  Class for managing an HSC calib filetype (get metadata, update metadata, etc) """
+    """Class for managing an HSC calib filetype.
 
-    ######################################################################
+    It gets metadata, update metadata, etc.
+    """
+
     def __init__(self, filetype, dbh, config, filepat=None):
-        """ Initialize object """
         # config must have filetype_metadata, file_header_info, keywords_file (OPT)
         FtMgmtGenFits.__init__(self, filetype, dbh, config, filepat)
 
-    ######################################################################
     def has_contents_ingested(self, listfullnames):
-        """ Check if exposure has row in rasicam_decam table """
-
+        """Check if exposure has row in rasicam_decam table.
+        """
         assert isinstance(listfullnames, list)
 
         # assume uncompressed and compressed files have same metadata
@@ -58,10 +57,9 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
 
         return results
 
-    ######################################################################
     def perform_metadata_tasks(self, fullname, do_update, update_info):
-        """ Read metadata from file, updating file values """
-
+        """Read metadata from file, updating file values.
+        """
         if miscutils.fwdebug_check(3, 'FTMGMT_DEBUG'):
             miscutils.fwdebug_print("INFO: beg")
 
@@ -88,9 +86,9 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
             miscutils.fwdebug_print("INFO: end")
         return metadata
 
-    ######################################################################
     def ingest_contents(self, listfullnames, **kwargs):
-        """ Ingest data into non-metadata table - raw_visit """
+        """Ingest data into non-metadata table - raw_visit.
+        """
         # CREATE TABLE raw_visit (visit int,field text,filter text,dateObs text,taiObs text, unique(visit));
 
 #        assert isinstance(listfullnames, list)
@@ -121,12 +119,10 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
 #                self.dbh.basic_insert_row(dbtable, row)
 #            else:
 #                raise Exception("No RASICAM header keywords identified for %s" % filename)
-#
-#
-    ######################################################################
-    def _gather_metadata_file(self, fullname, **kwargs):
-        """ Gather metadata for a single file """
 
+    def _gather_metadata_file(self, fullname, **kwargs):
+        """Gather metadata for a single file.
+        """
         if miscutils.fwdebug_check(3, 'FTMGMT_DEBUG'):
             miscutils.fwdebug_print("INFO: file=%s" % (fullname))
 
@@ -198,11 +194,10 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
             miscutils.fwdebug_print("INFO: end")
         return metadata, datadef
 
-    ######################################################################
     @classmethod
     def _gather_metadata_from_header(cls, fullname, hdulist, hdname, metakeys):
-        """ Get values from config """
-
+        """Get values from config.
+        """
         myvals = cls._override_vals(hdulist, hdname, fullname)
 
         metadata = OrderedDict()
@@ -224,7 +219,6 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
 
         return metadata, datadef
 
-    ######################################################################
     @classmethod
     def _override_vals(cls, hdulist, hdname, fullname):
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-"""
-Specialized wrapper to run LSST command line tasks 
+
+"""Specialized wrapper to run LSST command line tasks.
 """
 
 import os
@@ -22,7 +22,8 @@ import intgutils.replace_funcs as repfunc
 
 
 class GenWrapLSST(basic_wrapper.BasicWrapper):
-    """ Class to run LSST command line tasks """
+    """Class to run LSST command line tasks.
+    """
 
     def __init__(self, wclfile, debug=1):
         basic_wrapper.BasicWrapper.__init__(self, wclfile, debug)
@@ -114,7 +115,8 @@ class GenWrapLSST(basic_wrapper.BasicWrapper):
                         tar.extractall(tardir)
 
     def transform_inputs(self, exwcl):
-        """ Method to prepare the inputs """
+        """Method to prepare the inputs.
+        """
         # ingest inputs into Butler repository
 
         self.start_exec_task('transform_inputs')
@@ -175,7 +177,6 @@ class GenWrapLSST(basic_wrapper.BasicWrapper):
 
         self.end_exec_task(0)
 
-    ######################################################################
     #def transform_outputs(self, exwcl):
     #    """ Method to modify outputs prior to ingestion """
     #
@@ -221,7 +222,6 @@ class GenWrapLSST(basic_wrapper.BasicWrapper):
 #
 #
 #        self.end_exec_task(0)
-#
 
     def create_command_line(self, execnum, exwcl):
         if miscutils.fwdebug_check(3, 'GENWRAP_LSST_DEBUG'):
@@ -371,16 +371,14 @@ class GenWrapLSST(basic_wrapper.BasicWrapper):
         # long term discussion about how to handle this in future
         self.curr_exec['cmdline'] = self.curr_exec['cmdline'][:3995]
 
-
-##########
     @classmethod
     def _change_vars_parens(cls, str1):
         table = string.maketrans('()', '{}')
         return str1.translate(table)
 
     def read_listfile(self, listfile, linefmt, colstr):
-        """ Read a list file into a std nested dict """
-
+        """Read a list file into a std nested dict.
+        """
         if miscutils.fwdebug_check(3, 'GENWRAP_LSST_DEBUG'):
             miscutils.fwdebug_print('colstr=%s' % colstr)
 
@@ -419,8 +417,8 @@ class GenWrapLSST(basic_wrapper.BasicWrapper):
 
 
 def main():
-    """ entry point """
-
+    """Entry point.
+    """
     parser = argparse.ArgumentParser(description='Generic wrapper for LSST')
     parser.add_argument('inputwcl', nargs=1, action='store')
     args = parser.parse_args(sys.argv[1:])

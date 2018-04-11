@@ -4,7 +4,6 @@
 """
 
 import os
-import string
 import sys
 import re
 import tarfile
@@ -372,9 +371,9 @@ class GenWrapLSST(basic_wrapper.BasicWrapper):
         self.curr_exec['cmdline'] = self.curr_exec['cmdline'][:3995]
 
     @classmethod
-    def _change_vars_parens(cls, str1):
-        table = string.maketrans('()', '{}')
-        return str1.translate(table)
+    def _change_vars_parens(cls, string):
+        table = str.maketrans('()', '{}')
+        return string.translate(table)
 
     def read_listfile(self, listfile, linefmt, colstr):
         """Read a list file into a std nested dict.

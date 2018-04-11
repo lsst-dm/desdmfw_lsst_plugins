@@ -231,7 +231,7 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
             for field in ('filter', 'calibDate', 'ccd'):
                 match = re.search(".*%s=(\S+)" % field, calib_id)
                 if match:
-                    myvals[field] = match.groups()[0]
+                    myvals[field.lower()] = match.groups()[0]
                 else:
                     raise ValueError('Invalid CALIB_ID when looking for %s: %s (%s)' %
                                      (field, calib_id, fullname))

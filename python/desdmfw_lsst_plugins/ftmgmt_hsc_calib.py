@@ -1,14 +1,7 @@
 #!/usr/bin/env python
 
-# $Id: ftmgmt_raw.py 41700 2016-04-19 19:23:55Z mgower $
-# $Rev:: 41700                            $:  # Revision of last commit.
-# $LastChangedBy:: mgower                 $:  # Author of last commit.
-# $LastChangedDate:: 2016-04-19 14:23:55 #$:  # Date of last commit.
-
 """
 """
-
-__version__ = "$Rev: 41700 $"
 
 from datetime import datetime, timedelta
 from collections import OrderedDict
@@ -19,27 +12,23 @@ import re
 import despydmdb.dmdb_defs as dmdbdefs
 from filemgmt.ftmgmt_genfits import FtMgmtGenFits
 from despymisc import miscutils
-from despyfitsutils  import fitsutils
+from despyfitsutils import fitsutils
 import despyfitsutils.fits_special_metadata as spmeta
 
 
-
 class FtMgmtHSCCalib(FtMgmtGenFits):
-    """  Class for managing an HSC calib filetype (get metadata, update metadata, etc) """
+    """Class for managing an HSC calib filetype.
 
+    It gets metadata, update metadata, etc.
+    """
 
-
-    ######################################################################
     def __init__(self, filetype, dbh, config, filepat=None):
-        """ Initialize object """
         # config must have filetype_metadata, file_header_info, keywords_file (OPT)
         FtMgmtGenFits.__init__(self, filetype, dbh, config, filepat)
 
-
-    ######################################################################
     def has_contents_ingested(self, listfullnames):
-        """ Check if exposure has row in rasicam_decam table """
-
+        """Check if exposure has row in rasicam_decam table.
+        """
         assert isinstance(listfullnames, list)
 
         # assume uncompressed and compressed files have same metadata
@@ -50,10 +39,10 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
             byfilename[filename] = fname
 
         self.dbh.empty_gtt(dmdbdefs.DB_GTT_FILENAME)
-        self.dbh.load_filename_gtt(byfilename.keys())
+        self.dbh.load_filename_gtt(list(byfilename.keys()))
 
         dbq = "select r.filename from calibration r, %s g where r.filename=g.filename" % \
-                 (dmdbdefs.DB_GTT_FILENAME)
+            (dmdbdefs.DB_GTT_FILENAME)
         curs = self.dbh.cursor()
         curs.execute(dbq)
 
@@ -68,11 +57,9 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
 
         return results
 
-
-    ######################################################################
     def perform_metadata_tasks(self, fullname, do_update, update_info):
-        """ Read metadata from file, updating file values """
-
+        """Read metadata from file, updating file values.
+        """
         if miscutils.fwdebug_check(3, 'FTMGMT_DEBUG'):
             miscutils.fwdebug_print("INFO: beg")
 
@@ -99,11 +86,9 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
             miscutils.fwdebug_print("INFO: end")
         return metadata
 
-
-
-    ######################################################################
     def ingest_contents(self, listfullnames, **kwargs):
-        """ Ingest data into non-metadata table - raw_visit """
+        """Ingest data into non-metadata table - raw_visit.
+        """
         # CREATE TABLE raw_visit (visit int,field text,filter text,dateObs text,taiObs text, unique(visit));
 
 #        assert isinstance(listfullnames, list)
@@ -134,12 +119,10 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
 #                self.dbh.basic_insert_row(dbtable, row)
 #            else:
 #                raise Exception("No RASICAM header keywords identified for %s" % filename)
-#
-#
-    ######################################################################
-    def _gather_metadata_file(self, fullname, **kwargs):
-        """ Gather metadata for a single file """
 
+    def _gather_metadata_file(self, fullname, **kwargs):
+        """Gather metadata for a single file.
+        """
         if miscutils.fwdebug_check(3, 'FTMGMT_DEBUG'):
             miscutils.fwdebug_print("INFO: file=%s" % (fullname))
 
@@ -149,26 +132,26 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
         datadef = OrderedDict()
 
         metadefs = self.config['filetype_metadata'][self.filetype]
-        for hdname, hddict in metadefs['hdus'].items():
+        for hdname, hddict in list(metadefs['hdus'].items()):
             for status_sect in hddict:  # don't worry about missing here, ingest catches
                 # get value from filename
                 if 'f' in hddict[status_sect]:
-                    metakeys = hddict[status_sect]['f'].keys()
+                    metakeys = list(hddict[status_sect]['f'].keys())
                     mdata2 = self._gather_metadata_from_filename(fullname, metakeys)
                     metadata.update(mdata2)
 
                 # get value from wcl/config
                 if 'w' in hddict[status_sect]:
-                    metakeys = hddict[status_sect]['w'].keys()
+                    metakeys = list(hddict[status_sect]['w'].keys())
                     mdata2 = self._gather_metadata_from_config(fullname, metakeys)
                     metadata.update(mdata2)
 
                 # get value directly from header
                 if 'h' in hddict[status_sect]:
                     if miscutils.fwdebug_check(3, 'FTMGMT_DEBUG'):
-                        miscutils.fwdebug_print("INFO: headers=%s" % \
-                                                (hddict[status_sect]['h'].keys()))
-                    metakeys = hddict[status_sect]['h'].keys()
+                        miscutils.fwdebug_print("INFO: headers=%s" %
+                                                (list(hddict[status_sect]['h'].keys())))
+                    metakeys = list(hddict[status_sect]['h'].keys())
                     mdata2, ddef2 = self._gather_metadata_from_header(fullname, hdulist,
                                                                       hdname, metakeys)
                     metadata.update(mdata2)
@@ -177,10 +160,10 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
                 # calculate value from different header values(s)
                 if 'c' in hddict[status_sect]:
                     myvals = self._override_vals(hdulist, hdname, fullname)
-                    for funckey in hddict[status_sect]['c'].keys():
+                    for funckey in list(hddict[status_sect]['c'].keys()):
                         #print funckey
                         if funckey in myvals:
-                            metadata[funckey] = myvals[funckey] 
+                            metadata[funckey] = myvals[funckey]
                         else:
                             #print funckey, "not in myvals", myvals.keys()
                             try:
@@ -190,13 +173,15 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
                                     metadata[funckey] = val
                                 except KeyError:
                                     if miscutils.fwdebug_check(1, 'FTMGMT_DEBUG'):
-                                        miscutils.fwdebug_print("INFO: couldn't create value for key %s in %s header of file %s" % (funckey, hdname, fullname))
+                                        miscutils.fwdebug_print(
+                                            "INFO: couldn't create value for key %s in %s header of file %s" % (funckey, hdname, fullname))
                             except AttributeError:
-                                miscutils.fwdebug_print("WARN: Couldn't find func_%s in despyfits.fits_special_metadata" % (funckey))
+                                miscutils.fwdebug_print(
+                                    "WARN: Couldn't find func_%s in despyfits.fits_special_metadata" % (funckey))
 
                 # copy value from 1 hdu to primary
                 if 'p' in hddict[status_sect]:
-                    metakeys = hddict[status_sect]['p'].keys()
+                    metakeys = list(hddict[status_sect]['p'].keys())
                     mdata2, ddef2 = self._gather_metadata_from_header(fullname, hdulist,
                                                                       hdname, metakeys)
                     #print 'ddef2 = ', ddef2
@@ -209,12 +194,10 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
             miscutils.fwdebug_print("INFO: end")
         return metadata, datadef
 
-
-    ######################################################################
     @classmethod
     def _gather_metadata_from_header(cls, fullname, hdulist, hdname, metakeys):
-        """ Get values from config """
-
+        """Get values from config.
+        """
         myvals = cls._override_vals(hdulist, hdname, fullname)
 
         metadata = OrderedDict()
@@ -225,19 +208,17 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
 
             if key in myvals:
                 metadata[key] = myvals[key]
-            else: 
+            else:
                 try:
                     metadata[key] = fitsutils.get_hdr_value(hdulist, key.upper(), hdname)
                     datadef[key] = fitsutils.get_hdr_extra(hdulist, key.upper(), hdname)
                 except KeyError:
                     if miscutils.fwdebug_check(1, 'FTMGMT_DEBUG'):
-                        miscutils.fwdebug_print("INFO: didn't find key %s in %s header of file %s" %\
+                        miscutils.fwdebug_print("INFO: didn't find key %s in %s header of file %s" %
                                                 (key, hdname, fullname))
 
         return metadata, datadef
 
-
-    ######################################################################
     @classmethod
     def _override_vals(cls, hdulist, hdname, fullname):
 
@@ -246,17 +227,18 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
 
         try:
             calib_id = fitsutils.get_hdr_value(hdulist, 'CALIB_ID', hdname)
-    
+
             for field in ('filter', 'calibDate', 'ccd'):
                 match = re.search(".*%s=(\S+)" % field, calib_id)
                 if match:
-                    myvals[field] = match.groups()[0]
+                    myvals[field.lower()] = match.groups()[0]
                 else:
-                    raise ValueError('Invalid CALIB_ID when looking for %s: %s (%s)' % (field, calib_id, fullname))
+                    raise ValueError('Invalid CALIB_ID when looking for %s: %s (%s)' %
+                                     (field, calib_id, fullname))
 
                 #if m.group(1).upper() != 'NONE':
                 #    myvals['band'] = m.group(1)[-1]
-                #myvals['validstart'] = datetime.strptime(myvals['calibdate'], "%Y-%m-%d") - timedelta(6*30) 
+                #myvals['validstart'] = datetime.strptime(myvals['calibdate'], "%Y-%m-%d") - timedelta(6*30)
                 #myvals['validend'] = datetime.strptime(myvals['calibdate'], "%Y-%m-%d") + timedelta(6*30)
                 #print "MMG", myvals
         except:  # TODO: need to figure out exact error to pass

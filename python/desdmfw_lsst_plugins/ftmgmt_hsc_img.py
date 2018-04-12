@@ -1,16 +1,10 @@
 #!/usr/bin/env python
 
-# $Id: ftmgmt_raw.py 41700 2016-04-19 19:23:55Z mgower $
-# $Rev:: 41700                            $:  # Revision of last commit.
-# $LastChangedBy:: mgower                 $:  # Author of last commit.
-# $LastChangedDate:: 2016-04-19 14:23:55 #$:  # Date of last commit.
+"""Class for filetype management.
 
+Generic filetype management class used to do filetype specific tasks such as
+metadata and content ingestion.
 """
-Generic filetype management class used to do filetype specific tasks
-     such as metadata and content ingestion
-"""
-
-__version__ = "$Rev: 41700 $"
 
 from datetime import datetime
 from collections import OrderedDict
@@ -21,25 +15,23 @@ import re
 import despydmdb.dmdb_defs as dmdbdefs
 from filemgmt.ftmgmt_genfits import FtMgmtGenFits
 from despymisc import miscutils
-from despyfitsutils  import fitsutils
+from despyfitsutils import fitsutils
 import despyfitsutils.fits_special_metadata as spmeta
 
 
-
 class FtMgmtHSCImg(FtMgmtGenFits):
-    """  Class for managing an HSC raw filetype (get metadata, update metadata, etc) """
+    """Class for managing an HSC image filetype.
 
-    ######################################################################
+    It gets metadata, update metadata, etc.
+    """
+
     def __init__(self, filetype, dbh, config, filepat=None):
-        """ Initialize object """
         # config must have filetype_metadata, file_header_info, keywords_file (OPT)
         FtMgmtGenFits.__init__(self, filetype, dbh, config, filepat)
 
-
-    ######################################################################
     def has_contents_ingested(self, listfullnames):
-        """ Check if exposure has row in rasicam_decam table """
-
+        """Check if exposure has row in rasicam_decam table.
+        """
         assert isinstance(listfullnames, list)
 
         # assume uncompressed and compressed files have same metadata
@@ -50,10 +42,10 @@ class FtMgmtHSCImg(FtMgmtGenFits):
             byfilename[filename] = fname
 
         self.dbh.empty_gtt(dmdbdefs.DB_GTT_FILENAME)
-        self.dbh.load_filename_gtt(byfilename.keys())
+        self.dbh.load_filename_gtt(list(byfilename.keys()))
 
         dbq = "select r.filename from image r, %s g where r.filename=g.filename" % \
-                 (dmdbdefs.DB_GTT_FILENAME)
+            (dmdbdefs.DB_GTT_FILENAME)
         curs = self.dbh.cursor()
         curs.execute(dbq)
 
@@ -68,11 +60,9 @@ class FtMgmtHSCImg(FtMgmtGenFits):
 
         return results
 
-
-    ######################################################################
     def perform_metadata_tasks(self, fullname, do_update, update_info):
-        """ Read metadata from file, updating file values """
-
+        """Read metadata from file, updating file values.
+        """
         if miscutils.fwdebug_check(3, 'FTMGMT_DEBUG'):
             miscutils.fwdebug_print("INFO: beg")
 
@@ -88,7 +78,7 @@ class FtMgmtHSCImg(FtMgmtGenFits):
         metadata, _ = self._gather_metadata_file(fullname, hdulist=hdulist)
         if miscutils.fwdebug_check(6, 'FTMGMT_DEBUG'):
             miscutils.fwdebug_print("INFO: file=%s" % (fullname))
-        print "MMG", metadata
+        print("MMG", metadata)
 
         # call function to update headers
         if do_update:
@@ -101,11 +91,9 @@ class FtMgmtHSCImg(FtMgmtGenFits):
             miscutils.fwdebug_print("INFO: end")
         return metadata
 
-
-
-    ######################################################################
     def ingest_contents(self, listfullnames, **kwargs):
-        """ Ingest data into non-metadata table """
+        """Ingest data into non-metadata table.
+        """
         # CREATE TABLE raw_visit (visit int,field text,filter text,dateObs text,taiObs text, unique(visit));
 
 #        assert isinstance(listfullnames, list)
@@ -136,12 +124,10 @@ class FtMgmtHSCImg(FtMgmtGenFits):
 #                self.dbh.basic_insert_row(dbtable, row)
 #            else:
 #                raise Exception("No RASICAM header keywords identified for %s" % filename)
-#
-#
-    ######################################################################
-    def _gather_metadata_file(self, fullname, **kwargs):
-        """ Gather metadata for a single file """
 
+    def _gather_metadata_file(self, fullname, **kwargs):
+        """Gather metadata for a single file.
+        """
         if miscutils.fwdebug_check(3, 'FTMGMT_DEBUG'):
             miscutils.fwdebug_print("INFO: file=%s" % (fullname))
 
@@ -151,26 +137,26 @@ class FtMgmtHSCImg(FtMgmtGenFits):
         datadef = OrderedDict()
 
         metadefs = self.config['filetype_metadata'][self.filetype]
-        for hdname, hddict in metadefs['hdus'].items():
+        for hdname, hddict in list(metadefs['hdus'].items()):
             for status_sect in hddict:  # don't worry about missing here, ingest catches
                 # get value from filename
                 if 'f' in hddict[status_sect]:
-                    metakeys = hddict[status_sect]['f'].keys()
+                    metakeys = list(hddict[status_sect]['f'].keys())
                     mdata2 = self._gather_metadata_from_filename(fullname, metakeys)
                     metadata.update(mdata2)
 
                 # get value from wcl/config
                 if 'w' in hddict[status_sect]:
-                    metakeys = hddict[status_sect]['w'].keys()
+                    metakeys = list(hddict[status_sect]['w'].keys())
                     mdata2 = self._gather_metadata_from_config(fullname, metakeys)
                     metadata.update(mdata2)
 
                 # get value directly from header
                 if 'h' in hddict[status_sect]:
                     if miscutils.fwdebug_check(3, 'FTMGMT_DEBUG'):
-                        miscutils.fwdebug_print("INFO: headers=%s" % \
-                                                (hddict[status_sect]['h'].keys()))
-                    metakeys = hddict[status_sect]['h'].keys()
+                        miscutils.fwdebug_print("INFO: headers=%s" %
+                                                (list(hddict[status_sect]['h'].keys())))
+                    metakeys = list(hddict[status_sect]['h'].keys())
                     mdata2, ddef2 = self._gather_metadata_from_header(fullname, hdulist,
                                                                       hdname, metakeys)
                     metadata.update(mdata2)
@@ -179,25 +165,27 @@ class FtMgmtHSCImg(FtMgmtGenFits):
                 # calculate value from different header values(s)
                 if 'c' in hddict[status_sect]:
                     myvals = self._override_vals(fullname, hdulist, hdname)
-                    for funckey in hddict[status_sect]['c'].keys():
+                    for funckey in list(hddict[status_sect]['c'].keys()):
                         if funckey in myvals:
                             metadata[funckey] = myvals[funckey]
                         else:
                             try:
                                 specmf = getattr(spmeta, 'func_%s' % funckey.lower())
                             except AttributeError:
-                                miscutils.fwdebug_print("WARN: Couldn't find func_%s in despyfits.fits_special_metadata" % (funckey))
+                                miscutils.fwdebug_print(
+                                    "WARN: Couldn't find func_%s in despyfits.fits_special_metadata" % (funckey))
 
                             try:
                                 val = specmf(fullname, hdulist, hdname)
                                 metadata[funckey] = val
                             except KeyError:
                                 if miscutils.fwdebug_check(1, 'FTMGMT_DEBUG'):
-                                    miscutils.fwdebug_print("INFO: couldn't create value for key %s in %s header of file %s" % (funckey, hdname, fullname))
+                                    miscutils.fwdebug_print(
+                                        "INFO: couldn't create value for key %s in %s header of file %s" % (funckey, hdname, fullname))
 
                 # copy value from 1 hdu to primary
                 if 'p' in hddict[status_sect]:
-                    metakeys = hddict[status_sect]['p'].keys()
+                    metakeys = list(hddict[status_sect]['p'].keys())
                     mdata2, ddef2 = self._gather_metadata_from_header(fullname, hdulist,
                                                                       hdname, metakeys)
                     #print 'ddef2 = ', ddef2
@@ -210,12 +198,10 @@ class FtMgmtHSCImg(FtMgmtGenFits):
             miscutils.fwdebug_print("INFO: end")
         return metadata, datadef
 
-
-    ######################################################################
     @classmethod
     def _gather_metadata_from_header(cls, fullname, hdulist, hdname, metakeys):
-        """ Get values from config """
-
+        """Get values from config.
+        """
         metadata = OrderedDict()
         datadef = OrderedDict()
         for key in metakeys:
@@ -226,17 +212,13 @@ class FtMgmtHSCImg(FtMgmtGenFits):
                 datadef[key] = fitsutils.get_hdr_extra(hdulist, key.upper(), hdname)
             except KeyError:
                 if miscutils.fwdebug_check(1, 'FTMGMT_DEBUG'):
-                    miscutils.fwdebug_print("INFO: didn't find key %s in %s header of file %s" %\
+                    miscutils.fwdebug_print("INFO: didn't find key %s in %s header of file %s" %
                                             (key, hdname, fullname))
 
         return metadata, datadef
 
-
-
-    ######################################################################
     @classmethod
     def _override_vals(cls, fullname, hdulist, hdname):
-
         myvals = {}
 
         object = fitsutils.get_hdr_value(hdulist, 'OBJECT', hdname)
@@ -259,9 +241,7 @@ class FtMgmtHSCImg(FtMgmtGenFits):
         return myvals
 
     ######################################################################
-    ######################################################################
-    ######################################################################
-    # copied from python/lsst/obs/subaru/ingest.py and then modified to remove 
+    # copied from python/lsst/obs/subaru/ingest.py and then modified to remove
     # dependence upon md object
 
     @classmethod
@@ -298,17 +278,18 @@ class FtMgmtHSCImg(FtMgmtGenFits):
 
     @classmethod
     def translate_filter(self, filter):
-        """Want upper-case filter names"""
+        """Want upper-case filter names.
+        """
         # filter01
         try:
             return filter.strip().upper()
         except:
             return "Unrecognized"
 
-
     @classmethod
     def getTjd(self, mjd):
-        """Return truncated (modified) Julian Date"""
+        """Return truncated (modified) Julian Date.
+        """
         #return int(mjd) - self.DAY0
 
         DAY0 = 55927  # Zero point for  2012-01-01  51544 -> 2000-01-01
@@ -316,10 +297,12 @@ class FtMgmtHSCImg(FtMgmtGenFits):
 
     #@classmethod
     #def translate_pointing(self, md):
-    #    """This value was originally called 'pointing', and intended to be used
-    #    to identify a logical group of exposures.  It has evolved to simply be
+    #    """
+    #
+    #    This value was originally called 'pointing', and intended to be used
+    #    to identify a logical group of exposures. It has evolved to simply be
     #    a form of truncated Modified Julian Date, and is called 'visitID' in
-    #    some versions of the code.  However, we retain the name 'pointing' for
+    #    some versions of the code. However, we retain the name 'pointing' for
     #    backward compatibility.
     #    """
     #    try:

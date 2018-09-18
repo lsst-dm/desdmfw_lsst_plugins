@@ -8,7 +8,7 @@ metadata and content ingestion.
 
 from datetime import datetime
 from collections import OrderedDict
-import pyfits
+from astropy.io import fits
 import os
 import re
 
@@ -67,10 +67,10 @@ class FtMgmtHSCImg(FtMgmtGenFits):
             miscutils.fwdebug_print("INFO: beg")
 
         # open file
-        #hdulist = pyfits.open(fullname, 'update')
-        primary_hdr = pyfits.getheader(fullname, 0)
-        prihdu = pyfits.PrimaryHDU(header=primary_hdr)
-        hdulist = pyfits.HDUList([prihdu])
+        #hdulist = fits.open(fullname, 'update')
+        primary_hdr = fits.getheader(fullname, 0)
+        prihdu = fits.PrimaryHDU(header=primary_hdr)
+        hdulist = fits.HDUList([prihdu])
         #import lsst.afw.image as afwImage
         #md = afwImage.readMetadata(filename, extnum)
 
@@ -113,7 +113,7 @@ class FtMgmtHSCImg(FtMgmtGenFits):
 #                hdulist = kwargs['hdulist']
 #                primary_hdr = hdulist[0].header
 #            else:
-#                primary_hdr = pyfits.getheader(fullname, 0)
+#                primary_hdr = fits.getheader(fullname, 0)
 #
 #            row = get_vals_from_header(primary_hdr)
 #            row['filename'] = filename

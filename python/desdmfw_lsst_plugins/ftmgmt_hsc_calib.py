@@ -5,7 +5,7 @@
 
 from datetime import datetime, timedelta
 from collections import OrderedDict
-import pyfits
+from astropy.io import fits
 import os
 import re
 
@@ -64,9 +64,9 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
             miscutils.fwdebug_print("INFO: beg")
 
         # open file
-        primary_hdr = pyfits.getheader(fullname, 0)
-        prihdu = pyfits.PrimaryHDU(header=primary_hdr)
-        hdulist = pyfits.HDUList([prihdu])
+        primary_hdr = fits.getheader(fullname, 0)
+        prihdu = fits.PrimaryHDU(header=primary_hdr)
+        hdulist = fits.HDUList([prihdu])
         #import lsst.afw.image as afwImage
         #md = afwImage.readMetadata(filename, extnum)
 
@@ -108,7 +108,7 @@ class FtMgmtHSCCalib(FtMgmtGenFits):
 #                hdulist = kwargs['hdulist']
 #                primary_hdr = hdulist[0].header
 #            else:
-#                primary_hdr = pyfits.getheader(fullname, 0)
+#                primary_hdr = fits.getheader(fullname, 0)
 #
 #            row = get_vals_from_header(primary_hdr)
 #            row['filename'] = filename
